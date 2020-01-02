@@ -97,4 +97,71 @@ return Hj;
 
 This is later to be used for the Extended aspect of the Kalman Filter which represents the fact that we need to linearize non-linear functions by taking the tangent in the respective point so transformation can be applied and the Gaussian covariance is kept. 
 
-For this implementation I chose to calculate 𝑝 + 𝑝  and 𝑝 + 𝑝  first and then process each element of the matrix. The function returns the Jacobian matrix only if division by zero can be avoided. 
+The function returns the Jacobian matrix only if division by zero can be avoided. 
+
+
+### Prediction
+
+The Kalman Filter works in a sequence of `Prediction` - `Update` cyclically computed. Each time a new measurement is received from one of the sensors, a prediction is computed first. 
+
+To be able to predict the state estimation, the elapsed time and the transition matrix are needed. 
+
+The `dt` is simply the time between the previous timestamp and the one carrying the new measurement.
+
+```
+// dt - expressed in seconds
+  float dt = (measurement_pack.timestamp_ - previous_timestamp_) / 1000000.0;
+  previous_timestamp_ = measurement_pack.timestamp_;
+```
+
+`F_` is a matrix that, when multiplied with `x`, predicts where the object will be after time `dt`.
+Given that our state space `x` is `(px, py, vx, vy)` the `F_` matrix for an object moving with constant velocity becomes:
+
+```
+// the transition matrix F_
+  ekf_.F_ = MatrixXd(4, 4);
+  ekf_.F_ << 1, 0, dt, 0,
+             0, 1, 0, dt,
+             0, 0, 1, 0,
+             0, 0, 0, 1;
+```
+
+There is only one prediction function, regardless if it's calculated for a RADAR or LiDAR measurement. The same equations are used independently from the sensor type. 
+
+```
+//state prediction
+x_ = F_ * x_;
+MatrixXd Ft = F_.transpose();
+P_ = F_ * P_ * Ft + Q_;
+```
+
+`P_` is the covariance matrix to which the process noise is added. The `Q_` process noise takes into account that the prediction is known not to be accurate and it’s meant to increase the uncertainty after each prediction. 
+
+Since the acceleration is unknown we can add it to the noise component. So, we have a
+random acceleration vector `ν` in this form:
+
+![acceleration_noise](images/acceleration_noise.JPG)
+
+The acceleration is a random `[ax, ay]` vector with zero mean and standard deviation `σax` and `σay`.
+
+`ax` and `ay` are assumed uncorrelated noise processes, so after combining everything in one matrix we obtain our 4 by 4 `Q_` matrix:
+
+![Qmatrix](images/Qmatrix.JPG)
+
+
+The `σax` and `σay` implemented as `noise_ax` and `noise_ay` are given for the project to be `9.0` meters per second squared.
+
+```
+// the process noise covariance matrix Q_
+  float noise_ax = 9.0f;
+  float noise_ay = 9.0f;
+  float dt4 = (dt*dt*dt*dt)/4;
+  float dt3 = (dt*dt*dt)/2;
+  float dt2 = (dt*dt);
+  
+  ekf_.Q_ = MatrixXd(4, 4);
+  ekf_.Q_ << dt4*noise_ax, 0, dt3*noise_ax, 0,
+             0, dt4*noise_ay, 0, dt3*noise_ay,
+             dt3*noise_ax, 0, dt2*noise_ax, 0,
+             0, dt3*noise_ay, 0, dt2*noise_ay;
+```
