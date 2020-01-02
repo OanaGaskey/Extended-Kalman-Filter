@@ -66,6 +66,35 @@ This is a convenient format because now I can sum them up and divide by the numb
 
 ### Calculate Jacobian
 
-The Jacobian matrix here is calculated to get the first partial derivative of the h function’s variables with respect of the space state variables. The equations are already provided below:
+The Jacobian matrix here is calculated to get the first partial derivative of the h function’s variables with respect of the space state variables. The equations are provided below:
 
 ![jacobian](images/jacobian.JPG)
+
+The Jacobian matrix needs to be calculated at each cycle because the space state vector changes and the derivatives need to be calculated in different points. 
+
+```
+MatrixXd Hj(3,4);
+// recover state parameters
+float px = x_state(0);
+float py = x_state(1);
+float vx = x_state(2);
+float vy = x_state(3);
+float pxysqr = powf(px, 2) + powf(py, 2);
+float pxysqrrt =  hypotf(px, py);
+
+// check division by zero
+if (fabs(pxysqr) < 0.0001) {
+  cout << "CalculateJacobian () - Error - Division by Zero" << endl;
+  return Hj;
+}
+// compute the Jacobian matrix  
+Hj << px/pxysqrrt, py/pxysqrrt, 0, 0,
+      -py/pxysqr, px/pxysqr, 0, 0,
+      py*(vx*py-vy*px)/powf(pxysqrrt,3), px*(vy*px-vx*py)/powf(pxysqrrt,3), px/pxysqrrt, py/pxysqrrt;
+
+return Hj; 
+```
+
+This is later to be used for the Extended aspect of the Kalman Filter which represents the fact that we need to linearize non-linear functions by taking the tangent in the respective point so transformation can be applied and the Gaussian covariance is kept. 
+
+For this implementation I chose to calculate 𝑝 + 𝑝  and 𝑝 + 𝑝  first and then process each element of the matrix. The function returns the Jacobian matrix only if division by zero can be avoided. 
