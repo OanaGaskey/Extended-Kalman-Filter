@@ -121,11 +121,20 @@ The `σax` and `σay` implemented as `noise_ax` and `noise_ay` are given for the
              0, dt3*noise_ay, 0, dt2*noise_ay;
 ```
 
-### Update LiDAR
 
-For the *Update* step, we need to know which sensor is sending the data. This information is relevant to determine the H_ matrix. If data is coming from LiDAR, `H_laser` is used and the update step is straight forward. If data is coming from RADAR, due to non-lineaity, the Jacobian matrix is used.
+### Measurement Update - LiDAR
 
+For the *Update* step, we need to know which sensor is sending the data. This information is relevant to determine the measurement update equiations.
 
+The Kalman Filter measurement update equations are the following:
+
+![measurement_update](images/measurement_update.JPG)
+
+where `z` is the measurement vector and `x'` is the predicted state space.
+
+For a lidar sensor, the `z` vector contains the `[px,py]` measurements. `H` is the matrix that projects your belief about the object's current state into the measurement space of the sensor. For lidar, this is a fancy way of saying that we discard velocity information from the state variable since the lidar sensor only measures position: The state vector `x` contains information about [p_x, p_y, v_x, v_y] whereas the `z` vector will only contain [px, py]. Multiplying `H` allows us to compare `x'`, the predicted state, with `z`, the sensor measurement.
+
+`K` is the Kalman gain just used for calculation purposes and `R` is the measurement noise.
 
 ```
 VectorXd z_pred = H_ * x_;
@@ -180,9 +189,11 @@ This is later to be used for the Extended aspect of the Kalman Filter which repr
 
 The function returns the Jacobian matrix only if division by zero can be avoided. 
 
-### Update RADAR
+
+### Measurement Update - RADAR
 
 if RADAR has sent the data, then the Jacobian matrix shown above is used.
+
 
 ### Calculate RMSE
 
