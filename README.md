@@ -130,11 +130,18 @@ The Kalman Filter measurement update equations are the following:
 
 ![measurement_update](images/measurement_update.JPG)
 
-where `z` is the measurement vector and `x'` is the predicted state space.
+where `z` is the measurement vector and `x'` is the predicted state space. `K` is the Kalman gain just used for calculation purposes and `R` is the measurement noise.
 
-For a lidar sensor, the `z` vector contains the `[px,py]` measurements. `H` is the matrix that projects your belief about the object's current state into the measurement space of the sensor. For lidar, this is a fancy way of saying that we discard velocity information from the state variable since the lidar sensor only measures position: The state vector `x` contains information about [p_x, p_y, v_x, v_y] whereas the `z` vector will only contain [px, py]. Multiplying `H` allows us to compare `x'`, the predicted state, with `z`, the sensor measurement.
+For a lidar sensor, the `z` vector contains the `[px,py]` measurements. `H` is the matrix that projects your belief about the object's current state into the measurement space of the sensor. For lidar, this is a fancy way of saying that we discard velocity information from the state variable since the lidar sensor only measures position: 
+The state vector `x` contains information about [p_x, p_y, v_x, v_y] whereas the `z` vector will only contain [px, py]. Multiplying `H` allows us to compare `x'`, the predicted state, with `z`, the sensor measurement.
 
-`K` is the Kalman gain just used for calculation purposes and `R` is the measurement noise.
+```
+ // measurement matrix - laser
+H_laser_ << 1, 0, 0, 0,
+            0, 1, 0, 0;
+```
+
+The implementation fo the measurement update is given below. `x_` is the predicted state and `z_pred` is `x_` in the form of the measurement vector. Substracting the two gives us teh error `y`.
 
 ```
 VectorXd z_pred = H_ * x_;
@@ -151,6 +158,15 @@ MatrixXd I = MatrixXd::Identity(x_size, x_size);
 P_ = (I - K * H_) * P_;
 ```
  
+`R_` is the measurement noise that is taken into account knowing the precision of each sensor. For laser `R_` is:
+
+```
+//measurement covariance matrix - laser
+  R_laser_ << 0.0225, 0,
+              0, 0.0225;
+```
+
+This the LiDAR's best feature, being able to detect onjects with a precision of about 2 centimeters.
 
 ### Calculate Jacobian
 
