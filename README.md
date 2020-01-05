@@ -2,7 +2,7 @@
 
 Sensor fusion algorithm using LiDAR and RADAR data to track pedestrian, predicting and updating dynamic state estimation.
 
-![GIF](images/EKF.gif)
+![GIF](images/extended_kalman_filter.gif)
 
 
 This project implements the extended Kalman Filter for tracking a pedestrian, but it could track any traffic participant in the same manner. The intention is to measure the pedestrian’s position and velocity.
