@@ -1,13 +1,13 @@
 # Extended Kalman Filter
 
-Sensor fusion algorithm using LiDAR and RADAR data to track pedestrian, predicting and updating dynamic state estimation.
+Sensor fusion algorithm using LiDAR and RADAR data to track moving object, predicting and updating dynamic state estimation.
 
 ![GIF](images/extended_kalman_filter.gif)
 
 
-This project implements the extended Kalman Filter for tracking a pedestrian, but it could track any traffic participant in the same manner. The intention is to measure the pedestrian’s position and velocity.
+This project implements the extended Kalman Filter for tracking a moving object. The intention is to measure the object's position and velocity.
 
-Since we are only interested in 2D movement, the state variables are `px`,`py`,`vx`,`vy`. The sensors used for detecting the pedestrian are RADAR and Laser (LIDAR). The advantage of having multiple types of sensors which are fused is obtaining a higher performance. The Laser has a better position accuracy, but the RADAR measures the velocity directly by using the Doppler Effect. The input data for the algorithm is synthetic, meaning that there are not real measurements from real sensors.  
+Since we are only interested in 2D movement, the state variables are `px`,`py`,`vx`,`vy`. The sensors used for detecting the object are RADAR and Laser (LIDAR). The advantage of having multiple types of sensors which are fused is obtaining a higher performance. The Laser has a better position accuracy, but the RADAR measures the velocity directly by using the Doppler Effect. The input data for the algorithm is synthetic, meaning that there are not real measurements from real sensors.  
  
 
 This project is implemented in C++ using the Eigen library. The source code is located in `FusionEKF.cpp` and `kalman_filter.cpp` files in the `src` folder above. 
@@ -33,11 +33,11 @@ The Kalman Filter prediction equations are the following:
 
 ![prediction](images/prediction.JPG)
 
-where `x` is the current state space, `x'` is the predicted state space and `u` is the control which is zero in this case since we don't control the pedestrian's motion.
+where `x` is the current state space, `x'` is the predicted state space and `u` is the control which is zero in this case since we don't control the object's motion.
 
-`F` is the transition matrix describing the pedestrian's dynamics and `P` is the covariance matrix representing the uncertainty in the state space values, and `Q` is the prediction noise.
+`F` is the transition matrix describing the object's dynamics and `P` is the covariance matrix representing the uncertainty in the state space values, and `Q` is the prediction noise.
 
-Pedestrian's position and velocity prediction is done assuming linear motion with zero acceleration
+Object's position and velocity prediction is done assuming linear motion with zero acceleration
 
 ![linear_motion](images/linear_motion.JPG)
 
@@ -263,7 +263,7 @@ The values are taken from the RADAR sensor specs.
 
 ## Calculate RMSE
 
-Root Mean Squared Error is used to evaluate the performance of the algorithm. The pedestrian's estimated position using the Extended Kalman Filter is compared with the ground truth. 
+Root Mean Squared Error is used to evaluate the performance of the algorithm. The object's estimated position using the Extended Kalman Filter is compared with the ground truth. 
 
 ![RMSE](images/RMSE.JPG)
 
@@ -306,8 +306,11 @@ The Extended Kalman Filter is ran on the simulator and it's tracking values are 
 
 ![results](images/results.JPG)
 
-The main challenges are curved trajectories and non zero acceleration.
+The main challenges are curved trajectories and non zero acceleration. At `Time Step = 499` the state estimation and covariance matrix are the following:
 
+![x_P](images/x_P.JPG)
+
+Even if `P_` was initialized only with variances, the standard deviation for each state value, it builts information about covariances. This is because the uncetrainty of the `vx` for example has an impact on the estimation of `x` and so on.
 
 [![ExtendedKalmanFilter](https://img.youtube.com/vi/uNLgVoCxvGA/0.jpg)](https://www.youtube.com/watch?v=uNLgVoCxvGA)
 
