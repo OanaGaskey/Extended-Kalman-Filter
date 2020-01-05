@@ -304,6 +304,11 @@ This is a convenient format because now I can sum them up and divide by the numb
 
 The Extended Kalman Filter is ran on the simulator and it's tracking values are compared to the ground truth. The results are good, position is tracked within 10 centimeters per direction and velocity within 0.5 meters per second per direction.
 
-The main challenge is that the object is moving on curved trajectories and it's acceleration is non zero.
-
 ![results](images/results.JPG)
+
+The main challenges are curved trajectories and non zero acceleration.
+
+
+[![ExtendedKalmanFilter](https://img.youtube.com/vi/uNLgVoCxvGA/0.jpg)](https://www.youtube.com/watch?v=uNLgVoCxvGA)
+
+ Click on the image to see the video!
